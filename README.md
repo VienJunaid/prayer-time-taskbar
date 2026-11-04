@@ -19,11 +19,11 @@ All prayer times are **calculated on your PC using the ISNA method**. No interne
 
 | Feature | Status |
 |---|---|
-| Icon + current prayer + time left, next to the taskbar clock | Planned (v0.1) |
-| Offline ISNA calculation (Fajr 15°, Isha 15°) | Planned (v0.1) |
-| Shafi'i / Hanafi Asr option | Planned (v0.1) |
-| Location and offsets set in Windhawk's Settings tab | Planned (v0.1) |
-| Automatic daylight saving time handling | Planned (v0.1) |
+| Icon + current prayer + time left, next to the taskbar clock | ✅ Done (v0.1) |
+| Offline ISNA calculation (Fajr 15°, Isha 15°) | ✅ Done (v0.1) |
+| Shafi'i / Hanafi Asr option | ✅ Done (v0.1) |
+| Location and offsets set in Windhawk's Settings tab | ✅ Done (v0.1) |
+| Automatic daylight saving time handling | ✅ Done (v0.1) |
 | Warning style when time is almost up (e.g. < 15 min) | Planned (v0.2) |
 | Hover tooltip showing all 5 prayer times for today | Planned (v0.2) |
 | Notification at the start of each prayer | Idea |
@@ -65,7 +65,7 @@ The countdown is **how much time remains to pray the current prayer**, meaning t
 | `format` | string | `{icon} {prayer} · {time} left` | Display template |
 | `formatNoPrayer` | string | `{icon} {next} in {time}` | Template for the Sunrise→Dhuhr gap |
 | `offsetFajr` … `offsetIsha` | int (minutes) | `0` | Fine-tune each prayer to match your local mosque |
-| `warningMinutes` | int | `15` | (v0.2) Highlight when this little time is left |
+| `warningMinutes` | int | `15` | *(coming in v0.2)* Highlight when this little time is left |
 
 Numbers with decimals are stored as strings because Windhawk settings only support integer numbers.
 
@@ -108,14 +108,14 @@ Numbers with decimals are stored as strings because Windhawk settings only suppo
    - Asr = Dhuhr + A(t)
    - Maghrib = Dhuhr + T(0.833)
    - Isha = Dhuhr + T(15)
-7. **Convert UTC to local time** with the Windows API (`SystemTimeToTzSpecificLocalTime`) so **daylight saving time is automatic**.
-8. **Apply the per-prayer minute offsets** from settings.
+7. **Apply the per-prayer minute offsets** from settings and round each time to the minute.
+8. **Keep everything in UTC.** The countdown is the difference between two UTC instants, so **daylight saving time and time zone changes need no special handling**. The local date only decides which days to calculate (yesterday, today and tomorrow, so the Isha countdown can cross midnight).
 
 Here φ is latitude and all trig is in degrees. Formulas follow the well-known PrayTimes.org method; this project uses an independent implementation.
 
 **High latitudes:** if `acos` gets a value outside [−1, 1], meaning the sun never reaches 15° below the horizon (summer in far-north locations), fall back to the "angle-based" rule: night portion = 15/60 of the night. This doesn't happen in the continental US but keeps the mod from crashing.
 
-**Recalculate** once at startup, at local midnight, and whenever settings change or the system time or time zone changes.
+**Recalculate** on every clock refresh (once a minute). It's a few microseconds of math, and it means midnight, settings, system time and time zone changes are always picked up.
 
 ---
 
@@ -157,6 +157,8 @@ Windhawk mods are a **single `.wh.cpp` file** that contains the code, the metada
 
 ## 🚀 Installation (for users)
 
+Once the mod is accepted into the Windhawk catalog, search for **Prayer Time Taskbar** in Windhawk's **Explore** tab and click **Install**. Until then, install it manually:
+
 1. Install **Windhawk** from [windhawk.net](https://windhawk.net).
 2. Open Windhawk and click **Create a New Mod**.
 3. Replace the template with the contents of `mod/prayer-time-taskbar.wh.cpp`.
@@ -182,7 +184,7 @@ Windhawk mods are a **single `.wh.cpp` file** that contains the code, the metada
 
 ## 🗺️ Roadmap
 
-- **v0.1:** Icon, current period, and countdown. ISNA offline calculation with settings.
+- **v0.1 (released):** Icon, current period, and countdown. ISNA offline calculation with settings.
 - **v0.2:** Warning color or text when under `warningMinutes`. Hover tooltip with all 5 times.
 - **v0.3:** Optional toast notification at each prayer start.
 - **Later:** More methods (MWL, Umm al-Qura, Egyptian), Hijri date, custom image icon.
@@ -191,7 +193,7 @@ Windhawk mods are a **single `.wh.cpp` file** that contains the code, the metada
 
 ## 📜 License
 
-MIT (suggested). Pick your license when creating the repo.
+[GPL-3.0](LICENSE). The clock hook follows the GPL-3.0 Taskbar Clock Customization mod.
 
 ## 🙏 Credits
 
